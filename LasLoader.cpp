@@ -1,3 +1,5 @@
+// Created by Mathias Eek 2022
+
 #include "LasLoader.h"
 #include <fstream>
 #include <sstream>
