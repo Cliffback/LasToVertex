@@ -3,7 +3,7 @@ project ("LasToVertex")
 set(CMAKE_CXX_STANDARD 20)
 
 # Add source to this project's executable.
-add_executable (LasToVertex "LasToVertex.cpp" "LasToVertex.h")
+add_executable (LasToVertex "LasToVertex.cpp" "LasToVertex.h" "LasLoader.h" "LasLoader.cpp")
 
 target_include_directories(LasToVertex PUBLIC "Libs/HeaderOnly")
 
