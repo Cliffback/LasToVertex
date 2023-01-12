@@ -423,4 +423,6 @@ namespace LAS {
             }
         }
     }
+    vec3::vec3(float xin, float yin, float zin) : x{ xin }, y{ yin], z{zin} {
+    }
 }

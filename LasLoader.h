@@ -1,9 +1,46 @@
 #pragma once
 #include <string>
 #include <vector>
+// Created by Mathias Eek 2022
+
 #include <cassert>
 #include <iostream>
 #include "glm/glm.hpp"
+
+namespace mml {
+    class vec3 {
+    public:
+        vec3(float xin, float yin, float zin);
+        vec3(const float i = 0.f);
+
+        const vec3& operator=(const vec3& vec);
+        const vec3& operator+=(const vec3& vec);
+        const vec3& operator-=(const vec3& vec);
+        const vec3& operator+(const vec3& vec);
+        const vec3& operator-(const vec3& vec);
+        const vec3& operator*(const vec3& vec);
+        const vec3& operator*(const float i);
+        const vec3& operator/(const vec3& vec);
+
+        float length() const;
+        void normalize();
+
+        vec3 cross(const vec3& vec1, const vec3& vec2);
+        vec3 dot(const vec3& vec1, const vec3& vec2);
+
+        float x;
+        float y;
+        float z;
+
+    private:
+    };
+
+    struct vec2 {
+        float x;
+        float y;
+        float z;
+    };
+}
 
 namespace LAS {
 #define LOG(msg) std::cout << msg
@@ -13,28 +50,29 @@ namespace LAS {
 #define ASSERT(expr)
 #endif // !NDEBUG
 
+   
     struct MeshVertex {
-        glm::vec3 Pos{};
-        glm::vec3 Normal{};
-        glm::vec2 UV{};
+        mml::vec3 Pos{1.f};
+        mml::vec3 Normal{};
+        mml::vec2 UV{};
     };
 
     struct ColorVertex {
-        glm::vec3 Pos{};
-        glm::vec3 Color{};
+        mml::vec3 Pos{};
+        mml::vec3 Color{};
     };
 
     struct ColorNormalVertex {
-        glm::vec3 Pos{};
-        glm::vec3 Color{};
-        glm::vec3 Normal{};
+        mml::vec3 Pos{};
+        mml::vec3 Color{};
+        mml::vec3 Normal{};
     };
 
     struct Triangle {
-        glm::vec3 A;
-        glm::vec3 B;
-        glm::vec3 C;
-        glm::vec3 N;
+        mml::vec3 A;
+        mml::vec3 B;
+        mml::vec3 C;
+        mml::vec3 N;
     };
 
     class LasLoader {
@@ -64,10 +102,10 @@ namespace LAS {
         void UpdatePoints();
         void Triangulate();
 
-        glm::vec3 min{ 0.f };
-        glm::vec3 max{ 0.f };
-        glm::vec3 middle{ 0.f };
-        glm::vec3 offset{ 0.f };
+        mml::vec3 min;
+        mml::vec3 max;
+        mml::vec3 middle;
+        mml::vec3 offset;
         int xSquares{ 0 };
         int zSquares{ 0 };
     };
@@ -75,7 +113,7 @@ namespace LAS {
     struct HeightAndColor {
         int count{ 0 };
         float sum{ 0.f };
-        glm::vec3 color{ 0.f };
+        mml::vec3 color{ 0.f };
     };
 
     // Can't use struct directly because of padding of the size of the struct
