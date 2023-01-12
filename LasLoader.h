@@ -16,17 +16,16 @@ namespace mml {
         const vec3& operator=(const vec3& vec);
         const vec3& operator+=(const vec3& vec);
         const vec3& operator-=(const vec3& vec);
-        const vec3& operator+(const vec3& vec);
+        //const vec3& operator+(const vec3& vec);
         const vec3& operator-(const vec3& vec);
         const vec3& operator*(const vec3& vec);
         const vec3& operator*(const float i);
         const vec3& operator/(const vec3& vec);
+        const vec3& operator/(const float i);
+        const bool& operator!=(const vec3& vec);
+        const bool& operator==(const vec3& vec);
 
         float length() const;
-        void normalize();
-
-        vec3 cross(const vec3& vec1, const vec3& vec2);
-        vec3 dot(const vec3& vec1, const vec3& vec2);
 
         float x;
         float y;
@@ -40,6 +39,12 @@ namespace mml {
         float y;
         float z;
     };
+
+    vec3 normalize(const vec3& vec);
+    vec3 cross(const vec3& vec1, const vec3& vec2);
+    vec3 dot(const vec3& vec1, const vec3& vec2);
+    const vec3& operator+(const vec3& vec1, const vec3& vec2);
+
 }
 
 namespace LAS {
@@ -52,7 +57,7 @@ namespace LAS {
 
    
     struct MeshVertex {
-        mml::vec3 Pos{1.f};
+        mml::vec3 Pos{};
         mml::vec3 Normal{};
         mml::vec2 UV{};
     };

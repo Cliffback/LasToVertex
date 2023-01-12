@@ -7,6 +7,84 @@
 #include <stdio.h>
 #include <iostream>
 
+namespace mml {
+    vec3::vec3(float xin, float yin, float zin) : x{ xin }, y{ yin }, z{ zin } {}
+    vec3::vec3(const float i) : x{ i }, y{ i }, z{ i } {}
+
+    const vec3& vec3::operator=(const vec3& vec) {
+        x = vec.x;
+        y = vec.y;
+        z = vec.z;
+        return *this;
+    }
+    const vec3& vec3::operator+=(const vec3& vec) {
+        x += vec.x;
+        y += vec.y;
+        z += vec.z;
+        return *this;
+    }
+    const vec3& vec3::operator-=(const vec3& vec) {
+        x -= vec.x;
+        y -= vec.y;
+        z -= vec.z;
+        return *this;
+    }
+    /*const vec3& vec3::operator+(const vec3& vec) {
+        return { x + vec.x, y + vec.y, z + vec.z };
+    }*/
+    const vec3& vec3::operator-(const vec3& vec) {
+        return { x - vec.x, y - vec.y, z - vec.z };
+    }
+    const vec3& vec3::operator*(const vec3& vec) {
+        return { x * vec.x, y * vec.y, z * vec.z };
+    }
+    const vec3& vec3::operator*(const float i) {
+        return { x * i, y * i, z * i };
+    }
+    const vec3& vec3::operator/(const vec3& vec) {
+        return { x / vec.x, y / vec.y, z / vec.z };
+    }
+    const vec3& vec3::operator/(const float i) {
+        return { x / i, y / i, z / i };
+    }
+    const bool& vec3::operator!=(const vec3& vec) {
+        return !(x == vec.x || y == vec.y || z == vec.z);
+    }
+    const bool& vec3::operator==(const vec3& vec) {
+        return !(x != vec.x || y != vec.y || z != vec.z);
+    }
+    float vec3::length() const {
+        return std::sqrt(std::pow(x, 2.f) + std::pow(y, 2.f) + std::pow(z, 2.f));
+    }
+    vec3 normalize(const vec3& vec) {
+        vec3 temp;
+        float mylength = vec.length();
+        if (mylength > 0.f) {
+            temp.x = vec.x / mylength;
+            temp.y = vec.y / mylength;
+            temp.z = vec.z / mylength;
+        }
+        return temp;
+    }
+    vec3 cross(const vec3& vec1, const vec3& vec2) {
+        return {
+            (vec1.y * vec2.z) - (vec1.z * vec2.y), 
+            (vec1.z * vec2.x) - (vec1.x * vec2.z),
+            (vec1.x * vec2.y) - (vec1.y * vec2.x)
+        };
+    }
+    vec3 dot(const vec3& vec1, const vec3& vec2) {
+        return {
+            (vec1.x * vec2.x) +
+            (vec1.y * vec2.y) +
+            (vec1.z * vec2.z)
+        };
+    }
+    const vec3& operator+(const vec3& vec1, const vec3& vec2) {
+        return { vec1.x + vec2.x, vec1.y + vec2.y, vec1.z + vec2.z };
+    }
+}
+
 namespace LAS {
 
     LasLoader::LasLoader(const std::string& path) : PointData{} {
@@ -36,11 +114,11 @@ namespace LAS {
     void LasLoader::FindMinMax() {
 
         // Check if min/max already found
-        if (max != glm::vec3(0.f)) {
+        if (max != mml::vec3(0.f)) {
             return;
         }
-        min = glm::vec3(std::numeric_limits<float>::max());
-        max = glm::vec3(std::numeric_limits<float>::min());
+        min = mml::vec3(std::numeric_limits<float>::max());
+        max = mml::vec3(std::numeric_limits<float>::min());
 
         for (auto& vertex : PointData) {
             if (min.x > vertex.Pos.x) { min.x = vertex.Pos.x; }
@@ -57,7 +135,9 @@ namespace LAS {
         FindMinMax();
 
         // Find middle
-        middle = min + (max - min) / 2.f;
+
+        mml::vec3 size = (min + (max - min));
+        middle = size / 2.f;
         offset = min;
 
         // Update min/max
@@ -68,7 +148,7 @@ namespace LAS {
     void LasLoader::UpdatePoints() {
 
         for (auto& vertex : PointData) {
-            if (middle != glm::vec3(0.f))
+            if (middle != mml::vec3(0.f))
                 vertex.Pos -= offset;
         }
     }
@@ -102,20 +182,20 @@ namespace LAS {
         for (int z = 0; z < zSquares; ++z) {
             for (int x = 0; x < xSquares; ++x) {
                 float y;
-                glm::vec3 color{};
+                mml::vec3 color{};
                 if (heightmap[z][x].count == 0) {
                     y = -max.y;
                     noHeight.push_back(std::make_pair(x, z));
-                    color = glm::vec3(1.f);
+                    color = mml::vec3(1.f);
                 }
                 else {
                     //y = (average / count) - max.y;
                     y = heightmap[z][x].sum / heightmap[z][x].count - max.y;
-                    color = heightmap[z][x].color / glm::vec3(heightmap[z][x].count);
+                    color = heightmap[z][x].color / mml::vec3(heightmap[z][x].count);
                 }
                 MeshVertex temp{};
                 ColorNormalVertex temp2{};
-                temp.Pos = glm::vec3(x, y, z);
+                temp.Pos = mml::vec3(x, y, z);
                 temp2.Pos = temp.Pos;
                 temp2.Color = color;
                 VertexData.push_back(temp);
@@ -141,7 +221,7 @@ namespace LAS {
                 averageHeight += VertexData[x + ((z + 1) * xSquares)].Pos.y;
                 averageHeight += VertexData[(x - 1) + ((z + 1) * xSquares)].Pos.y;
 
-                glm::vec3 averageColor{};
+                mml::vec3 averageColor{};
                 averageColor += ColorNormalVertexData[(x - 1) + (z * xSquares)].Color;
                 averageColor += ColorNormalVertexData[(x - 1) + ((z - 1) * xSquares)].Color;
                 averageColor += ColorNormalVertexData[x + ((z - 1) * xSquares)].Color;
@@ -177,26 +257,26 @@ namespace LAS {
         for (int z = zmin; z < zmax; z++) {
             for (int x = xmin; x < xmax; x++) {
                 if (z == zmin || z == zmax - 1 || x == xmin || x == xmax - 1) {
-                    VertexData[x + (xmax * z)].Normal = glm::vec3(0.f, 1.f, 0.f);
+                    VertexData[x + (xmax * z)].Normal = mml::vec3(0.f, 1.f, 0.f);
                 }
                 else {
-                    glm::vec3 a(VertexData[x + (xmax * z)].Pos);
-                    glm::vec3 b(VertexData[x + 1 + (xmax * z)].Pos);
-                    glm::vec3 c(VertexData[x + 1 + (xmax * (z + 1))].Pos);
-                    glm::vec3 d(VertexData[x + (xmax * (z + 1))].Pos);
-                    glm::vec3 e(VertexData[x - 1 + (xmax * z)].Pos);
-                    glm::vec3 f(VertexData[x - 1 + (xmax * (z - 1))].Pos);
-                    glm::vec3 g(VertexData[x + (xmax * (z - 1))].Pos);
+                    mml::vec3 a(VertexData[x + (xmax * z)].Pos);
+                    mml::vec3 b(VertexData[x + 1 + (xmax * z)].Pos);
+                    mml::vec3 c(VertexData[x + 1 + (xmax * (z + 1))].Pos);
+                    mml::vec3 d(VertexData[x + (xmax * (z + 1))].Pos);
+                    mml::vec3 e(VertexData[x - 1 + (xmax * z)].Pos);
+                    mml::vec3 f(VertexData[x - 1 + (xmax * (z - 1))].Pos);
+                    mml::vec3 g(VertexData[x + (xmax * (z - 1))].Pos);
 
-                    auto n0 = glm::cross(c - a, b - a);
-                    auto n1 = glm::cross(d - a, c - a);
-                    auto n2 = glm::cross(e - a, d - a);
-                    auto n3 = glm::cross(f - a, e - a);
-                    auto n4 = glm::cross(g - a, f - a);
-                    auto n5 = glm::cross(b - a, g - a);
+                    auto n0 = mml::cross(c - a, b - a);
+                    auto n1 = mml::cross(d - a, c - a);
+                    auto n2 = mml::cross(e - a, d - a);
+                    auto n3 = mml::cross(f - a, e - a);
+                    auto n4 = mml::cross(g - a, f - a);
+                    auto n5 = mml::cross(b - a, g - a);
 
-                    glm::vec3 normal = n0 + n1 + n2 + n3 + n4 + n5;
-                    normal = glm::normalize(normal);
+                    mml::vec3 normal = n0 + n1 + n2 + n3 + n4 + n5;
+                    normal = mml::normalize(normal);
 
                     VertexData[x + (xmax * z)].Normal = normal;
                     ColorNormalVertexData[x + (xmax * z)].Normal = normal;
@@ -229,7 +309,7 @@ namespace LAS {
             auto ab = tempB.Pos - tempA.Pos;
             auto ac = tempC.Pos - tempA.Pos;
 
-            glm::vec3 normal = glm::normalize(glm::cross(ab, ac));
+            mml::vec3 normal = mml::normalize(mml::cross(ab, ac));
             tempA.Normal = normal;
             tempB.Normal = normal;
             tempC.Normal = normal;
@@ -278,8 +358,8 @@ namespace LAS {
                 top.B = VertexData[dIndex].Pos;
                 top.C = VertexData[cIndex].Pos;
 
-                bottom.N = glm::normalize(glm::cross(bottom.B - bottom.A, bottom.C - bottom.A));
-                top.N = glm::normalize(glm::cross(top.B - top.A, top.C - top.A));
+                bottom.N = mml::normalize(mml::cross(bottom.B - bottom.A, bottom.C - bottom.A));
+                top.N = mml::normalize(mml::cross(top.B - top.A, top.C - top.A));
 
                 out[z][x] = std::make_pair(bottom, top);
             }
@@ -301,7 +381,7 @@ namespace LAS {
             ss >> tempVertex.Pos.x;
             ss >> tempVertex.Pos.z;
             ss >> tempVertex.Pos.y;
-            tempVertex.Color = glm::vec3(0.f, 1.f, 0.f);
+            tempVertex.Color = mml::vec3(0.f, 1.f, 0.f);
             PointData.push_back(tempVertex);
         }
     }
@@ -310,7 +390,7 @@ namespace LAS {
 
         std::ifstream is(path, std::ios::binary | std::ios::ate);
         auto size = is.tellg();
-        std::vector<glm::vec3> lasDataPoints(size / sizeof(glm::vec3));
+        std::vector<mml::vec3> lasDataPoints(size / sizeof(mml::vec3));
         is.seekg(0);
         is.read(reinterpret_cast<char*>(lasDataPoints.data()), size);
 
@@ -319,7 +399,7 @@ namespace LAS {
             tempVertex.Pos.x = point.x;
             tempVertex.Pos.y = point.z;
             tempVertex.Pos.z = point.y;
-            tempVertex.Color = glm::vec3(1.f, 1.f, 1.f);
+            tempVertex.Color = mml::vec3(1.f, 1.f, 1.f);
             PointData.push_back(tempVertex);
         }
     }
@@ -392,7 +472,7 @@ namespace LAS {
                     tempVertex.Pos.x = (temp.xPos * header.xScaleFactor) + header.xOffset;
                     tempVertex.Pos.y = (temp.zPos * header.zScaleFactor) + header.zOffset;
                     tempVertex.Pos.z = (temp.yPos * header.yScaleFactor) + header.yOffset;
-                    tempVertex.Color = glm::vec3(0.f, 1.f, 0.f);
+                    tempVertex.Color = mml::vec3(0.f, 1.f, 0.f);
                     PointData.push_back(tempVertex);
                 }
             }
@@ -417,12 +497,10 @@ namespace LAS {
                     tempVertex.Pos.x = (temp.xPos * header.xScaleFactor) + header.xOffset;
                     tempVertex.Pos.y = (temp.zPos * header.zScaleFactor) + header.zOffset;
                     tempVertex.Pos.z = (temp.yPos * header.yScaleFactor) + header.yOffset;
-                    tempVertex.Color = glm::vec3(temp.red * 0.00001, temp.green * 0.00001, temp.blue * 0.00001);
+                    tempVertex.Color = mml::vec3(temp.red * 0.00001, temp.green * 0.00001, temp.blue * 0.00001);
                     PointData.push_back(tempVertex);
                 }
             }
         }
-    }
-    vec3::vec3(float xin, float yin, float zin) : x{ xin }, y{ yin], z{zin} {
     }
 }
