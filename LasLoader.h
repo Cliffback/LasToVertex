@@ -1,11 +1,11 @@
-#pragma once
-#include <string>
-#include <vector>
 // Created by Mathias Eek 2022
 
+#pragma once
+
+#include <string>
+#include <vector>
 #include <cassert>
 #include <iostream>
-#include "glm/glm.hpp"
 
 namespace mml {
     class vec3 {
